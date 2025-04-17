@@ -2,16 +2,19 @@ package types
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/cloudlink-omega/storage/pkg/bitfield"
 )
 
 type User struct {
-	ID       string             `gorm:"primaryKey;type:char(26);unique;not null"`
-	Username string             `gorm:"type:varchar(30)"`
-	Password string             `gorm:"type:varchar(255)"`
-	Email    string             `gorm:"type:varchar(255)"`
-	State    bitfield.Bitfield8 `gorm:"not null;default:0"`
+	ID        string             `gorm:"primaryKey;type:char(26);unique;not null"`
+	Username  string             `gorm:"type:varchar(30)"`
+	Password  string             `gorm:"type:varchar(255)"`
+	Email     string             `gorm:"type:varchar(255)"`
+	State     bitfield.Bitfield8 `gorm:"not null;default:0"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
 
 	Google    *UserGoogle      `gorm:"foreignKey:UserID"`
 	Discord   *UserDiscord     `gorm:"foreignKey:UserID"`
@@ -23,43 +26,55 @@ type User struct {
 }
 
 type UserGoogle struct {
-	UserID string `gorm:"primaryKey;type:char(26);unique;not null"`
-	ID     string `gorm:"type:varchar(255);unique;not null"`
+	UserID    string `gorm:"primaryKey;type:char(26);unique;not null"`
+	ID        string `gorm:"type:varchar(255);unique;not null"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
 
 	User User `gorm:"constraint:OnDelete:CASCADE;"`
 }
 
 type UserDiscord struct {
-	UserID string `gorm:"primaryKey;type:char(26);unique;not null"`
-	ID     string `gorm:"type:varchar(255);unique;not null"`
+	UserID    string `gorm:"primaryKey;type:char(26);unique;not null"`
+	ID        string `gorm:"type:varchar(255);unique;not null"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
 
 	User User `gorm:"constraint:OnDelete:CASCADE;"`
 }
 
 type UserGitHub struct {
-	UserID string `gorm:"primaryKey;type:char(26);unique;not null"`
-	ID     string `gorm:"type:varchar(255);unique;not null"`
+	UserID    string `gorm:"primaryKey;type:char(26);unique;not null"`
+	ID        string `gorm:"type:varchar(255);unique;not null"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
 
 	User User `gorm:"constraint:OnDelete:CASCADE;"`
 }
 
 type UserTOTP struct {
-	UserID string `gorm:"primaryKey;type:char(26);unique;not null"`
-	Secret string `gorm:"type:varchar(255);not null"`
+	UserID    string `gorm:"primaryKey;type:char(26);unique;not null"`
+	Secret    string `gorm:"type:varchar(255);not null"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
 
 	User User `gorm:"constraint:OnDelete:CASCADE;"`
 }
 
 type Verification struct {
-	UserID string `gorm:"primaryKey;type:char(26);unique;not null"`
-	Code   string `gorm:"type:char(6);not null"`
+	UserID    string `gorm:"primaryKey;type:char(26);unique;not null"`
+	Code      string `gorm:"type:char(6);not null"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
 
 	User User `gorm:"constraint:OnDelete:CASCADE;"`
 }
 
 type RecoveryCode struct {
-	UserID string `gorm:"type:char(26);not null"`
-	Code   string `gorm:"type:varchar(50);not null"`
+	UserID    string `gorm:"type:char(26);not null"`
+	Code      string `gorm:"type:varchar(50);not null"`
+	CreatedAt time.Time
+	UpdatedAt time.Time
 
 	User User `gorm:"constraint:OnDelete:CASCADE;"`
 }

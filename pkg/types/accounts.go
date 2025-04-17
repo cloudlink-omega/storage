@@ -13,12 +13,13 @@ type User struct {
 	Email    string             `gorm:"type:varchar(255)"`
 	State    bitfield.Bitfield8 `gorm:"not null;default:0"`
 
-	Google   *UserGoogle     `gorm:"foreignKey:UserID"`
-	Discord  *UserDiscord    `gorm:"foreignKey:UserID"`
-	GitHub   *UserGitHub     `gorm:"foreignKey:UserID"`
-	TOTP     *UserTOTP       `gorm:"foreignKey:UserID"`
-	Verify   *Verification   `gorm:"foreignKey:UserID"`
-	Recovery []*RecoveryCode `gorm:"foreignKey:UserID"`
+	Google    *UserGoogle      `gorm:"foreignKey:UserID"`
+	Discord   *UserDiscord     `gorm:"foreignKey:UserID"`
+	GitHub    *UserGitHub      `gorm:"foreignKey:UserID"`
+	TOTP      *UserTOTP        `gorm:"foreignKey:UserID"`
+	Verify    *Verification    `gorm:"foreignKey:UserID"`
+	Recovery  []*RecoveryCode  `gorm:"foreignKey:UserID"`
+	Developer *DeveloperMember `gorm:"foreignKey:UserID"`
 }
 
 type UserGoogle struct {

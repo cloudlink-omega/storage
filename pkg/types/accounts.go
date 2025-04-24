@@ -41,7 +41,7 @@ type User struct {
 
 type UserSession struct {
 	ID        string `gorm:"primaryKey;type:varchar(26);unique;not null"`
-	UserID    string `gorm:"foreignKey:UserID;type:char(26);unique;not null;index:idx_user_session_user_id"`
+	UserID    string `gorm:"foreignKey:UserID;type:char(26);not null;index:idx_user_session_user_id"`
 	UserAgent string `gorm:"type:varchar(255);not null"`
 	Origin    string `gorm:"type:varchar(255);not null"`
 	IP        string `gorm:"type:varchar(255);not null"`

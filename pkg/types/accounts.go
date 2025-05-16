@@ -108,5 +108,5 @@ type RecoveryCode struct {
 }
 
 func (u *User) String() string {
-	return fmt.Sprintf("[ID: %s, Username: %s, Password: %s, Email: %s, State: %d]", u.ID, u.Username, u.Password, u.Email, u.State)
+	return fmt.Sprintf("[ID: %s, Username: %s, Email: %s, State: %d]", u.ID, u.Username, u.Email, u.State)
 }

@@ -35,6 +35,11 @@ type User struct {
 	Developer    *DeveloperMember
 	UserGameSave []*UserGameSave
 	UserSession  []*UserSession
+	UserEvents   []*UserEvent
+}
+
+func (u *User) String() string {
+	return fmt.Sprintf("[ID: %s, Username: %s, Email: %s, State: %d]", u.ID, u.Username, u.Email, u.State)
 }
 
 type UserSession struct {
@@ -103,8 +108,4 @@ type RecoveryCode struct {
 	UpdatedAt time.Time
 
 	User User `gorm:"constraint:OnDelete:CASCADE;"`
-}
-
-func (u *User) String() string {
-	return fmt.Sprintf("[ID: %s, Username: %s, Email: %s, State: %d]", u.ID, u.Username, u.Email, u.State)
 }

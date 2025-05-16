@@ -14,9 +14,10 @@ type Developer struct {
 	CreatedAt   time.Time
 	UpdatedAt   time.Time
 
-	Games   []*DeveloperGame
-	Members []*DeveloperMember
-	Art     []*DeveloperArt
+	Games           []*DeveloperGame
+	Members         []*DeveloperMember
+	Art             []*DeveloperArt
+	DeveloperEvents []*DeveloperEvent
 }
 
 type DeveloperGame struct {

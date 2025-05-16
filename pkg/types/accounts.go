@@ -17,7 +17,7 @@ type User struct {
 
 	// A base64 encoded secret based on a randomly generated 256-bit key
 	// that is encrypted using the server's secret key.
-	Secret string `gorm:"type:char(32)"`
+	Secret string `gorm:"type:varchar(255)"`
 
 	// A 8-bit field of flags that are used to determine the properties of the user.
 	State bitfield.Bitfield8 `gorm:"not null;default:0"`

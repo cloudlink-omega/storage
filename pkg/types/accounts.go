@@ -22,10 +22,8 @@ type User struct {
 	// A 8-bit field of flags that are used to determine the properties of the user.
 	State bitfield.Bitfield8 `gorm:"not null;default:0"`
 
-	// The date and time when the user's account was created
+	// The date and time the user was created and last updated
 	CreatedAt time.Time
-
-	// The date and time when the user's account was last updated
 	UpdatedAt time.Time
 
 	Google       *UserGoogle
@@ -53,7 +51,7 @@ type UserSession struct {
 }
 
 type UserGoogle struct {
-	UserID    string `gorm:"foreignKey:UserID;type:char(26);unique;not null;index:idx_user_google_user_id"`
+	UserID    string `gorm:"foreignKey:UserID;type:char(26);not null;index:idx_user_google_user_id"`
 	GoogleID  string `gorm:"primaryKey;type:varchar(255);unique;not null"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -62,7 +60,7 @@ type UserGoogle struct {
 }
 
 type UserDiscord struct {
-	UserID    string `gorm:"foreignKey:UserID;type:char(26);unique;not null;index:idx_user_discord_user_id"`
+	UserID    string `gorm:"foreignKey:UserID;type:char(26);not null;index:idx_user_discord_user_id"`
 	DiscordID string `gorm:"primaryKey;type:varchar(255);unique;not null"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -71,7 +69,7 @@ type UserDiscord struct {
 }
 
 type UserGitHub struct {
-	UserID    string `gorm:"foreignKey:UserID;type:char(26);unique;not null;index:idx_user_git_hub_user_id"`
+	UserID    string `gorm:"foreignKey:UserID;type:char(26);not null;index:idx_user_git_hub_user_id"`
 	GitHubID  string `gorm:"primaryKey;type:varchar(255);unique;not null"`
 	CreatedAt time.Time
 	UpdatedAt time.Time
@@ -80,7 +78,7 @@ type UserGitHub struct {
 }
 
 type UserTOTP struct {
-	UserID    string `gorm:"foreignKey:UserID;type:char(26);unique;not null;index:idx_user_totp_user_id"`
+	UserID    string `gorm:"foreignKey:UserID;type:char(26);not null;index:idx_user_totp_user_id"`
 	Secret    string `gorm:"type:varchar(255);not null"`
 	CreatedAt time.Time
 	UpdatedAt time.Time

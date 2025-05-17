@@ -76,8 +76,8 @@ var UserEvents map[string][]any = map[string][]any{
 	"user_auth_password_error": {"Password authentication error", LogError},
 
 	"user_totp_enroll_started": {"User started TOTP enrollment", LogInfo},
-	"user_totp_enroll_success": {"User successfully enrolled in TOTP", LogInfo},
-	"user_totp_enroll_failure": {"User failed to enroll in TOTP", LogError},
+	"user_totp_enroll_success": {"User successfully enrolled TOTP", LogInfo},
+	"user_totp_enroll_failure": {"User failed to enroll TOTP", LogError},
 	"user_auth_totp_error":     {"TOTP authentication error", LogError},
 
 	"user_verify_sent":              {"User verification code was sent", LogInfo},

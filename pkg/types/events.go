@@ -33,10 +33,12 @@ type SystemEvent struct {
 }
 
 var SystemEvents map[string][]any = map[string][]any{
-	"secret_gen_error": {"Failed to generate user secret", LogError},
-	"get_user_error":   {"Failed to get user", LogError},
-	"email_off":        {"Email services are nonfunctional", LogWarn},
-	"totp_error":       {"TOTP validator failure", LogError},
+	"secret_gen_error":  {"Failed to generate user secret", LogError},
+	"hash_gen_error":    {"Failed to generate user password hash", LogError},
+	"get_user_error":    {"Failed to get user", LogError},
+	"email_off":         {"Email services are nonfunctional", LogWarn},
+	"totp_error":        {"TOTP validator failure", LogError},
+	"create_user_error": {"Failed to create user", LogError},
 }
 
 type UserEvent struct {
@@ -79,6 +81,7 @@ var UserEvents map[string][]any = map[string][]any{
 	"user_auth_totp_error":     {"TOTP authentication error", LogError},
 
 	"user_verify_sent":              {"User verification code was sent", LogInfo},
+	"user_verify_set_failure":       {"Failed to set verification code", LogError},
 	"user_verify_bypassed_test":     {"User verification was bypassed; testing mode enabled", LogWarn},
 	"user_verify_bypassed_disabled": {"User verification was bypassed; email verification is disabled", LogWarn},
 	"user_verify_success":           {"User successfully verified", LogInfo},

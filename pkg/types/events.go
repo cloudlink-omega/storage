@@ -19,14 +19,30 @@ type Event struct {
 
 	UserEvent      *UserEvent
 	DeveloperEvent *DeveloperEvent
+	SystemEvent    *SystemEvent
+}
+
+type SystemEvent struct {
+	ID         string `gorm:"primaryKey;type:varchar(26);unique;not null"`
+	EventID    string `gorm:"foreignKey:EventID;not null;index:idx_user_event_event_id"`
+	Details    string `gorm:"type:varchar(255);not null"`
+	Successful bool   `gorm:"not null;default:false"`
+	CreatedAt  time.Time
+
+	Event Event `gorm:"constraint:OnDelete:CASCADE;"`
+}
+
+var SystemEvents map[string][]any = map[string][]any{
+	"user_created": {"User was successfully created", LogInfo},
 }
 
 type UserEvent struct {
-	ID        string `gorm:"primaryKey;type:varchar(26);unique;not null"`
-	UserID    string `gorm:"foreignKey:UserID;type:char(26);not null;index:idx_user_event_user_id"`
-	EventID   uint8  `gorm:"foreignKey:EventID;not null;index:idx_user_event_event_id"`
-	Details   string `gorm:"type:varchar(255);not null"`
-	CreatedAt time.Time
+	ID         string `gorm:"primaryKey;type:varchar(26);unique;not null"`
+	UserID     string `gorm:"foreignKey:UserID;type:char(26);not null;index:idx_user_event_user_id"`
+	EventID    string `gorm:"foreignKey:EventID;not null;index:idx_user_event_event_id"`
+	Details    string `gorm:"type:varchar(255);not null"`
+	Successful bool   `gorm:"not null;default:false"`
+	CreatedAt  time.Time
 
 	User  User  `gorm:"constraint:OnDelete:NO ACTION;"`
 	Event Event `gorm:"constraint:OnDelete:CASCADE;"`
@@ -36,12 +52,14 @@ type UserEvent struct {
 var UserEvents map[string][]any = map[string][]any{
 	"user_created": {"User was successfully created", LogInfo},
 	"user_deleted": {"User was successfully deleted", LogInfo},
+	"user_error":   {"User error", LogError},
 
 	"user_login":  {"User was successfully logged in", LogInfo},
 	"user_logout": {"User was successfully logged out", LogInfo},
 
 	"user_session_created": {"User session was successfully created", LogInfo},
 	"user_session_deleted": {"User session was successfully deleted", LogInfo},
+	"user_session_error":   {"User session error", LogError},
 
 	"developer_member_created": {"Developer member was successfully created", LogInfo},
 	"developer_member_deleted": {"Developer member was successfully deleted", LogInfo},
@@ -57,24 +75,29 @@ var UserEvents map[string][]any = map[string][]any{
 	"user_totp_enroll_failure": {"User failed to enroll in TOTP", LogError},
 	"user_auth_totp_error":     {"TOTP authentication error", LogError},
 
-	"user_verify_sent":    {"User verification code was sent", LogInfo},
-	"user_verify_success": {"User successfully verified", LogInfo},
-	"user_verify_failure": {"User failed to verify", LogError},
+	"user_verify_sent":              {"User verification code was sent", LogInfo},
+	"user_verify_bypassed_test":     {"User verification was bypassed; testing mode enabled", LogWarn},
+	"user_verify_bypassed_disabled": {"User verification was bypassed; email verification is disabled", LogWarn},
+	"user_verify_success":           {"User successfully verified", LogInfo},
+	"user_verify_failure":           {"User failed to verify", LogError},
 
-	"user_recovery_set":     {"Recovery codes were generated", LogInfo},
-	"user_recovery_success": {"User used recovery code", LogInfo},
-	"user_recovery_failure": {"Error using recovery code", LogError},
+	"user_recovery_set":         {"Recovery codes were generated", LogInfo},
+	"user_recovery_set_failure": {"Recovery code setup error", LogError},
+	"user_recovery_success":     {"User used recovery code", LogInfo},
+	"user_recovery_failure":     {"Error using recovery code", LogError},
 
-	"user_password_reset_sent":    {"User password reset code was sent", LogInfo},
-	"user_password_reset_success": {"User successfully reset password", LogInfo},
-	"user_password_reset_failure": {"Error while resetting password", LogError},
+	"user_password_reset_sent":     {"User password reset code was sent", LogInfo},
+	"user_password_reset_verified": {"User password reset code was verified", LogInfo},
+	"user_password_reset_success":  {"User successfully reset password", LogInfo},
+	"user_password_reset_failure":  {"Error while resetting password", LogError},
 }
 
 type DeveloperEvent struct {
 	ID          string `gorm:"primaryKey;type:varchar(26);unique;not null"`
 	DeveloperID string `gorm:"foreignKey:DeveloperID;type:char(26);not null;index:idx_developer_event_developer_id"`
-	EventID     uint8  `gorm:"foreignKey:EventID;not null;index:idx_user_event_event_id"`
+	EventID     string `gorm:"foreignKey:EventID;not null;index:idx_user_event_event_id"`
 	Details     string `gorm:"type:varchar(255);not null"`
+	Successful  bool   `gorm:"not null;default:false"`
 	CreatedAt   time.Time
 
 	Developer Developer `gorm:"constraint:OnDelete:NO ACTION;"`

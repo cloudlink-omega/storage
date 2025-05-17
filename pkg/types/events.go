@@ -34,6 +34,9 @@ type SystemEvent struct {
 
 var SystemEvents map[string][]any = map[string][]any{
 	"secret_gen_error": {"Failed to generate user secret", LogError},
+	"get_user_error":   {"Failed to get user", LogError},
+	"email_off":        {"Email services are nonfunctional", LogWarn},
+	"totp_error":       {"TOTP validator failure", LogError},
 }
 
 type UserEvent struct {
@@ -90,6 +93,9 @@ var UserEvents map[string][]any = map[string][]any{
 	"user_password_reset_verified": {"User password reset code was verified", LogInfo},
 	"user_password_reset_success":  {"User successfully reset password", LogInfo},
 	"user_password_reset_failure":  {"Error while resetting password", LogError},
+
+	"recovery_code_retrieval_error": {"Failed to retrieve user recovery codes", LogError},
+	"recovery_code_store_error":     {"Failed to store user recovery codes", LogError},
 }
 
 type DeveloperEvent struct {

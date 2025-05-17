@@ -33,7 +33,7 @@ type SystemEvent struct {
 }
 
 var SystemEvents map[string][]any = map[string][]any{
-	"user_created": {"User was successfully created", LogInfo},
+	"secret_gen_error": {"Failed to generate user secret", LogError},
 }
 
 type UserEvent struct {

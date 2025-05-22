@@ -1,7 +1,5 @@
 package types
 
-import "time"
-
 const (
 	LogGeneric uint8 = 0
 	LogDebug   uint8 = 1
@@ -12,26 +10,6 @@ const (
 	LogTrace   uint8 = 6
 )
 
-type Event struct {
-	ID          string `gorm:"primaryKey;type:varchar(100);unique;not null"`
-	Description string `gorm:"type:varchar(255);not null;default:''"`
-	LogLevel    uint8  `gorm:"not null,default:0"`
-
-	UserEvent      *UserEvent
-	DeveloperEvent *DeveloperEvent
-	SystemEvent    *SystemEvent
-}
-
-type SystemEvent struct {
-	ID         string `gorm:"primaryKey;type:varchar(26);unique;not null"`
-	EventID    string `gorm:"foreignKey:EventID;not null;index:idx_user_event_event_id"`
-	Details    string `gorm:"type:varchar(255);not null"`
-	Successful bool   `gorm:"not null;default:false"`
-	CreatedAt  time.Time
-
-	Event Event `gorm:"constraint:OnDelete:CASCADE;"`
-}
-
 var SystemEvents map[string][]any = map[string][]any{
 	"secret_gen_error":  {"Failed to generate user secret", LogError},
 	"hash_gen_error":    {"Failed to generate user password hash", LogError},
@@ -39,18 +17,6 @@ var SystemEvents map[string][]any = map[string][]any{
 	"email_off":         {"Email services are nonfunctional", LogWarn},
 	"totp_error":        {"TOTP validator failure", LogError},
 	"create_user_error": {"Failed to create user", LogError},
-}
-
-type UserEvent struct {
-	ID         string `gorm:"primaryKey;type:varchar(26);unique;not null"`
-	UserID     string `gorm:"foreignKey:UserID;type:char(26);not null;index:idx_user_event_user_id"`
-	EventID    string `gorm:"foreignKey:EventID;not null;index:idx_user_event_event_id"`
-	Details    string `gorm:"type:varchar(255);not null"`
-	Successful bool   `gorm:"not null;default:false"`
-	CreatedAt  time.Time
-
-	User  User  `gorm:"constraint:OnDelete:NO ACTION;"`
-	Event Event `gorm:"constraint:OnDelete:CASCADE;"`
 }
 
 // Define the events used for logging user activity
@@ -99,18 +65,6 @@ var UserEvents map[string][]any = map[string][]any{
 
 	"recovery_code_retrieval_error": {"Failed to retrieve user recovery codes", LogError},
 	"recovery_code_store_error":     {"Failed to store user recovery codes", LogError},
-}
-
-type DeveloperEvent struct {
-	ID          string `gorm:"primaryKey;type:varchar(26);unique;not null"`
-	DeveloperID string `gorm:"foreignKey:DeveloperID;type:char(26);not null;index:idx_developer_event_developer_id"`
-	EventID     string `gorm:"foreignKey:EventID;not null;index:idx_user_event_event_id"`
-	Details     string `gorm:"type:varchar(255);not null"`
-	Successful  bool   `gorm:"not null;default:false"`
-	CreatedAt   time.Time
-
-	Developer Developer `gorm:"constraint:OnDelete:NO ACTION;"`
-	Event     Event     `gorm:"constraint:OnDelete:CASCADE;"`
 }
 
 // Define the events used for logging developer activity

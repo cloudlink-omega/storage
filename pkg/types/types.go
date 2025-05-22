@@ -110,6 +110,7 @@ type SystemEvent struct {
 	Event *Event `gorm:"foreignKey:EventID;references:ID;constraint:OnDelete:CASCADE;"`
 }
 
+// UserEvent is used to log changes to a user account, ranging from authentication and account changes to account errors.
 type UserEvent struct {
 	ID         string `gorm:"primaryKey;type:char(26);unique;not null"`
 	UserID     string `gorm:"not null"`
@@ -122,6 +123,55 @@ type UserEvent struct {
 	Event *Event `gorm:"foreignKey:EventID;references:ID;constraint:OnDelete:CASCADE;"`
 }
 
+// UserReport represents a user-submitted report on another user.
+// By specifying a ReportTag, the user can specify the kind of the report.
+// If the ReportTag is null, the user can fill out the ReportDetails field for a custom report.
+type UserReport struct {
+	ID              string `gorm:"primaryKey;type:char(26);unique;not null"`
+	UserID          string `gorm:"type:char(26);not null"`
+	SubmittedUserID string `gorm:"type:char(26);not null"`
+	ReportTagID     *string
+	Details         string `gorm:"type:mediumtext"`
+	CreatedAt       time.Time
+
+	SubmittedUser *User      `gorm:"foreignKey:SubmittedUserID;references:ID;constraint:OnDelete:CASCADE;"`
+	User          *User      `gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCADE;"`
+	ReportTag     *ReportTag `gorm:"foreignKey:ReportTagID;references:ID;constraint:OnDelete:CASCADE;"`
+}
+
+// DeveloperGameReport represents a user-submitted report on a developer's game.
+// By specifying a ReportTag, the user can specify the kind of the report.
+// If the ReportTag is null, the user can fill out the ReportDetails field for a custom report.
+type DeveloperGameReport struct {
+	ID              string `gorm:"primaryKey;type:char(26);unique;not null"`
+	SubmittedUserID string `gorm:"not null"`
+	DeveloperGameID string `gorm:"not null"`
+	ReportTagID     *string
+	Details         string `gorm:"type:mediumtext"`
+	CreatedAt       time.Time
+
+	SubmittedUser *User          `gorm:"foreignKey:SubmittedUserID;references:ID;constraint:OnDelete:CASCADE;"`
+	DeveloperGame *DeveloperGame `gorm:"foreignKey:DeveloperGameID;references:ID;constraint:OnDelete:CASCADE;"`
+	ReportTag     *ReportTag     `gorm:"foreignKey:ReportTagID;references:ID;constraint:OnDelete:CASCADE;"`
+}
+
+// DeveloperReport represents a user-submitted report on a developer's profile.
+// By specifying a ReportTag, the user can specify the kind of the report.
+// If the ReportTag is null, the user can fill out the ReportDetails field for a custom report.
+type DeveloperReport struct {
+	ID              string `gorm:"primaryKey;type:char(26);unique;not null"`
+	SubmittedUserID string `gorm:"not null"`
+	DeveloperID     string `gorm:"not null"`
+	ReportTagID     *string
+	Details         string `gorm:"type:mediumtext"`
+	CreatedAt       time.Time
+
+	SubmittedUser *User      `gorm:"foreignKey:SubmittedUserID;references:ID;constraint:OnDelete:CASCADE;"`
+	Developer     *Developer `gorm:"foreignKey:DeveloperID;references:ID;constraint:OnDelete:CASCADE;"`
+	ReportTag     *ReportTag `gorm:"foreignKey:ReportTagID;references:ID;constraint:OnDelete:CASCADE;"`
+}
+
+// DeveloperEvent is used to log changes to a developer profile, ranging from memberships to approvals.
 type DeveloperEvent struct {
 	ID          string `gorm:"primaryKey;type:char(26);unique;not null"`
 	DeveloperID string
@@ -134,6 +184,7 @@ type DeveloperEvent struct {
 	Event     *Event     `gorm:"foreignKey:EventID;references:ID;constraint:OnDelete:CASCADE;"`
 }
 
+// UserGameSave is used to store a user's game save data.
 type UserGameSave struct {
 	UserID          string `gorm:"primaryKey;type:char(26);not null"`
 	DeveloperGameID string `gorm:"primaryKey;type:char(26);not null"`
@@ -146,6 +197,7 @@ type UserGameSave struct {
 	DeveloperGame *DeveloperGame `gorm:"foreignKey:DeveloperGameID;references:ID;constraint:OnDelete:CASCADE;"`
 }
 
+// Developer represents a game developer.
 type Developer struct {
 	ID          string             `gorm:"primaryKey;type:char(26);unique;not null"`
 	Name        string             `gorm:"type:tinytext;not null;default:''"`
@@ -161,6 +213,7 @@ type Developer struct {
 	DeveloperMembers []*DeveloperMember `gorm:"foreignKey:DeveloperID"`
 }
 
+// DeveloperGame represents a game created by a developer.
 type DeveloperGame struct {
 	ID          string `gorm:"primaryKey;type:char(26);unique;not null"`
 	Name        string `gorm:"type:tinytext;not null;default:''"`
@@ -176,6 +229,7 @@ type DeveloperGame struct {
 	UserGameSaves []*UserGameSave `gorm:"foreignKey:DeveloperGameID"`
 }
 
+// DeveloperMember represents memberships between a user and a developer account.
 type DeveloperMember struct {
 	UserID      string             `gorm:"not null"`
 	DeveloperID string             `gorm:"not null"`
@@ -185,6 +239,7 @@ type DeveloperMember struct {
 	Developer *Developer `gorm:"foreignKey:DeveloperID;references:ID;constraint:OnDelete:CASCADE;"`
 }
 
+// Image represents an image stored on the server's hosted folder.
 type Image struct {
 	ID        string `gorm:"primaryKey;type:char(26);unique;not null"`
 	Link      string `gorm:"type:mediumtext;not null"`
@@ -192,13 +247,21 @@ type Image struct {
 	UpdatedAt time.Time
 }
 
+// Event is a generic entity used to de-duplicate events across the system.
 type Event struct {
 	ID          string `gorm:"primaryKey;type:varchar(50);unique;not null"`
 	Description string `gorm:"type:tinytext"`
 	LogLevel    uint8
 }
 
+// FeatureTag is a generic entity used to de-duplicate features for games.
 type FeatureTag struct {
-	ID          string `gorm:"not null;"`
+	ID          string `gorm:"primaryKey;type:varchar(50);unique;not null;"`
+	Description string `gorm:"type:tinytext"`
+}
+
+// ReportTag is a generic entity used to de-duplicate report types.
+type ReportTag struct {
+	ID          string `gorm:"primaryKey;type:varchar(50);unique;not null;"`
 	Description string `gorm:"type:tinytext"`
 }

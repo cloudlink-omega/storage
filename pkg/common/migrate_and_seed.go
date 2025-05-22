@@ -19,6 +19,7 @@ func MigrateAndSeed(db *gorm.DB) error {
 	// Perform database migrations
 	if err := db.AutoMigrate(
 		&types.Event{},
+		&types.ReportTag{},
 		&types.SystemEvent{},
 		&types.User{},
 		&types.Verification{},
@@ -29,10 +30,13 @@ func MigrateAndSeed(db *gorm.DB) error {
 		&types.UserTOTP{},
 		&types.UserSession{},
 		&types.UserEvent{},
+		&types.UserReport{},
 		&types.Developer{},
 		&types.DeveloperEvent{},
 		&types.DeveloperGame{},
 		&types.DeveloperMember{},
+		&types.DeveloperGameReport{},
+		&types.DeveloperReport{},
 		&types.Achievement{},
 		&types.UserGameSave{},
 		&types.Image{},

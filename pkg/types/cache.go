@@ -6,7 +6,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gofiber/fiber/v2/log"
 	"github.com/patrickmn/go-cache"
 )
 
@@ -24,7 +23,6 @@ func NewDBCache() *DBCache {
 
 func (c *DBCache) init() {
 	if c.cache == nil {
-		log.Info("CACHE CREATE")
 		c.cache = cache.New(5*time.Minute, 2*time.Minute)
 		c.lock = &sync.RWMutex{}
 	}
@@ -40,7 +38,6 @@ func (c *DBCache) Set(keytype string, value any, keys ...string) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	c.cache.SetDefault(key, value)
-	log.Infof("CACHE SET: %s", key)
 }
 
 func (c *DBCache) Get(keytype string, keys ...string) (any, bool) {
@@ -51,10 +48,8 @@ func (c *DBCache) Get(keytype string, keys ...string) (any, bool) {
 	defer c.lock.RUnlock()
 	data, hit := c.cache.Get(key)
 	if hit {
-		log.Infof("CACHE HIT: %s", key)
 		return data, true
 	}
-	log.Infof("CACHE MISS: %s", key)
 	return nil, false
 }
 
@@ -65,7 +60,6 @@ func (c *DBCache) Delete(keytype string, keys ...string) {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	c.cache.Delete(key)
-	log.Infof("CACHE DELETE: %s", key)
 }
 
 func (c *DBCache) Flush() {
@@ -73,5 +67,4 @@ func (c *DBCache) Flush() {
 	c.lock.Lock()
 	defer c.lock.Unlock()
 	c.cache.Flush()
-	log.Info("CACHE FLUSH")
 }

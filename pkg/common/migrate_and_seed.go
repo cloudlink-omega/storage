@@ -79,41 +79,91 @@ func MigrateAndSeed(db *gorm.DB) error {
 		return err
 	}
 
-	if err := db.FirstOrCreate(&types.DeveloperGame{
+	var demogame *types.DeveloperGame = &types.DeveloperGame{
 		Name:        "Test Game",
 		ID:          "01HNPHRWS0N0AYMM5K4HN31V4W",
 		DeveloperID: "01HNPHQM5SPAG43J68R3NRX4M6",
 		Description: "This is a sample game provided by the server for testing use.",
-		Features: []*types.FeatureTag{
-			{ID: "achievements"},
-			{ID: "controllers"},
-			{ID: "everyone"},
-			{ID: "legacy"},
-			{ID: "multidev"},
-			{ID: "oss"},
-			{ID: "onscratch"},
-			{ID: "ontw"},
-			{ID: "review"},
-			{ID: "save"},
-			{ID: "vchat"},
-		},
-	}).Error; err != nil {
+	}
+	if err := db.FirstOrCreate(&demogame).Error; err != nil {
 		return err
 	}
+
+	var tags []*types.FeatureTag
+	for _, tag := range []string{
+		"achievements",
+		"controllers",
+		"everyone",
+		"legacy",
+		"multidev",
+		"oss",
+		"onscratch",
+		"ontw",
+		"review",
+		"save",
+		"vchat",
+	} {
+		tags = append(tags, &types.FeatureTag{ID: tag})
+	}
+	db.Model(&demogame).Association("Features").Replace(tags)
 
 	return nil
 }
 
 func ConvertDatabase(old_db *gorm.DB, new_db *gorm.DB, accounts_db *database.Database) error {
 
-	// Step 1: Convert users
+	// Step 1: Copy developers and games
+	var old_developers []*old_types.Developers
+	if err := old_db.Find(&old_developers).Error; err != nil {
+		return err
+	}
+
+	log.Info("[1/3] Converting", len(old_developers), "developers and games...")
+	for i, developer := range old_developers {
+
+		// Copy developer
+		new_developer := &types.Developer{
+			ID:          developer.ID,
+			Name:        developer.Name,
+			CreatedAt:   time.Unix(developer.Created, 0),
+			Description: developer.Description,
+			State:       developer.State,
+		}
+		if err := new_db.FirstOrCreate(&new_developer).Error; err != nil {
+			return err
+		}
+
+		// Copy games
+		var old_games []*old_types.Games
+		if err := old_db.Where("developerid = ?", developer.ID).Find(&old_games).Error; err != nil {
+			return err
+		}
+
+		log.Debug("[", i+1, "/", len(old_developers), "] Found ", len(old_games), " games for developer ", developer.Name, ".")
+		for _, game := range old_games {
+			if err := new_db.FirstOrCreate(&types.DeveloperGame{
+				ID:          game.ID,
+				Name:        game.Name,
+				DeveloperID: developer.ID,
+				Description: "",
+				CreatedAt:   game.Created,
+				State:       game.State,
+			}).Error; err != nil {
+				return err
+			}
+		}
+	}
+	log.Info("Done converting developers and games.")
+	time.Sleep(3 * time.Second)
+
+	// Step 2: Convert users and saves
 	var old_users []*old_types.Users
 	if err := old_db.Find(&old_users).Error; err != nil {
 		return err
 	}
 
-	log.Debug("[1/5] Converting", len(old_users), "users...")
-	for _, user := range old_users {
+	log.Info("[2/3] Converting", len(old_users), "users and their saves...")
+	for i, user := range old_users {
 
 		// Generate a secret
 		secret, err := accounts_db.CreateUserSecret()
@@ -134,99 +184,56 @@ func ConvertDatabase(old_db *gorm.DB, new_db *gorm.DB, accounts_db *database.Dat
 		if err := new_db.FirstOrCreate(&new_user).Error; err != nil {
 			return err
 		}
-	}
 
-	// Step 2: Copy developers
-	var old_developers []*old_types.Developers
-	if err := old_db.Find(&old_developers).Error; err != nil {
-		return err
-	}
-
-	log.Debug("[2/5] Converting", len(old_developers), "developers...")
-	for _, developer := range old_developers {
-		new_developer := &types.Developer{
-			ID:          developer.ID,
-			Name:        developer.Name,
-			CreatedAt:   time.Unix(developer.Created, 0),
-			Description: developer.Description,
-			State:       developer.State,
-		}
-		if err := new_db.FirstOrCreate(&new_developer).Error; err != nil {
+		// Copy saves
+		var old_saves []*old_types.Saves
+		if err := old_db.Where("userid = ?", user.ID).Find(&old_saves).Error; err != nil {
 			return err
 		}
-	}
 
-	// Step 3: Copy games
-	var old_games []*old_types.Games
-	if err := old_db.Find(&old_games).Error; err != nil {
-		return err
-	}
+		log.Info("[", i+1, "/", len(old_users), "] Found ", len(old_saves), " saves for user ", user.Username, "...")
+		for _, save := range old_saves {
 
-	log.Debug("[3/5] Converting", len(old_games), "games...")
-	for _, game := range old_games {
-		new_game := &types.DeveloperGame{
-			ID:          game.ID,
-			Name:        game.Name,
-			DeveloperID: game.DeveloperID,
-			Description: "",
-			CreatedAt:   game.Created,
-			State:       game.State,
+			log.Debug(" > ", save.GameID, " (", save.SlotID, ")...")
+
+			// Encrypt the save
+			encrypted_save, err := accounts_db.Encrypt(new_user, save.Contents)
+			if err != nil {
+				return err
+			}
+
+			// Store the save
+			new_save := &types.UserGameSave{
+				UserID:          save.UserID,
+				DeveloperGameID: save.GameID,
+				SaveSlot:        save.SlotID,
+				SaveData:        encrypted_save,
+			}
+			if err := new_db.Save(&new_save).Error; err != nil {
+				return err
+			}
 		}
-		if err := new_db.FirstOrCreate(&new_game).Error; err != nil {
-			return err
-		}
 	}
+	log.Info("Done converting users and saves.")
+	time.Sleep(3 * time.Second)
 
-	// Step 4: Copy developer memberships
+	// Step 3: Convert memberships
+
 	var old_developer_members []*old_types.DeveloperMembers
 	if err := old_db.Find(&old_developer_members).Error; err != nil {
 		return err
 	}
 
-	log.Debug("[4/5] Converting", len(old_developer_members), "developer memberships...")
-	for _, old_member := range old_developer_members {
-		new_member := &types.DeveloperMember{
-			DeveloperID: old_member.DeveloperID,
-			UserID:      old_member.UserID,
-		}
-		if err := new_db.FirstOrCreate(&new_member).Error; err != nil {
-			return err
-		}
+	log.Info("[3/3] Converting", len(old_developer_members), "developer memberships...")
+	for i, membership := range old_developer_members {
+		log.Info("[", i+1, "/", len(old_developer_members), "] User: ", membership.UserID, " -> Developer: ", membership.DeveloperID, "...")
+		new_db.Model(&types.Developer{ID: membership.DeveloperID}).Association("DeveloperMembers").Append(&types.DeveloperMember{
+			UserID:      membership.UserID,
+			DeveloperID: membership.DeveloperID,
+		})
 	}
 
-	// Step 5: Copy saves
-	var old_saves []*old_types.Saves
-	if err := old_db.Find(&old_saves).Error; err != nil {
-		return err
-	}
-
-	log.Debug("[5/5] Converting", len(old_saves), "saves. This may take a while...")
-	for _, save := range old_saves {
-
-		// We will need to get the user's secret to encrypt the save
-		user, err := accounts_db.GetUser(save.UserID)
-		if err != nil {
-			return err
-		}
-
-		// Encrypt the save
-		encrypted_save, err := accounts_db.Encrypt(user, save.Contents)
-		if err != nil {
-			return err
-		}
-
-		// Store the save
-		new_save := &types.UserGameSave{
-			UserID:          save.UserID,
-			DeveloperGameID: save.GameID,
-			SaveSlot:        save.SlotID,
-			SaveData:        encrypted_save,
-		}
-		if err := new_db.Save(&new_save).Error; err != nil {
-			return err
-		}
-	}
-
-	log.Debug("Conversion complete.")
+	log.Info("Conversion complete.")
+	time.Sleep(3 * time.Second)
 	return nil
 }

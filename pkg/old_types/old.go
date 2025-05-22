@@ -44,8 +44,8 @@ type Developers struct {
 }
 
 type DeveloperMembers struct {
-	DeveloperID string `gorm:"column:developerid;foreignKey:DeveloperID;type:char(26);not null;index:idx_developer_members_developer_id"`
-	UserID      string `gorm:"column:userid;foreignKey:UserID;type:char(26);not null;index:idx_developer_members_user_id"`
+	DeveloperID string `gorm:"column:developerid;foreignKey:DeveloperID;type:char(26);not null;"`
+	UserID      string `gorm:"column:userid;foreignKey:UserID;type:char(26);not null;"`
 
 	Developer *Developers `gorm:"constraint:OnDelete:CASCADE;"`
 	User      *Users      `gorm:"constraint:OnDelete:CASCADE;"`

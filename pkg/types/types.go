@@ -22,6 +22,7 @@ type User struct {
 	Banner          *Image             `gorm:"foreignKey:BannerID;references:ID;constraint:OnDelete:SET NULL;"`
 	UserGameSaves   []*UserGameSave    `gorm:"foreignKey:UserID"`
 	DeveloperMember []*DeveloperMember `gorm:"foreignKey:UserID"`
+	GameComments    []*GameComment     `gorm:"foreignKey:UserID"`
 }
 
 type UserSession struct {
@@ -227,6 +228,24 @@ type DeveloperGame struct {
 	Developer     *Developer      `gorm:"foreignKey:DeveloperID;references:ID;constraint:OnDelete:CASCADE;"`
 	Features      []*FeatureTag   `gorm:"many2many:developer_game_features;"`
 	UserGameSaves []*UserGameSave `gorm:"foreignKey:DeveloperGameID"`
+	GameComments  []*GameComment  `gorm:"foreignKey:DeveloperGameID"`
+}
+
+// GameComment represents a comment on a game by a user.
+type GameComment struct {
+	ID              string `gorm:"primaryKey;type:char(26);not null"`
+	UserID          string `gorm:"type:char(26);not null"`
+	DeveloperGameID string `gorm:"type:char(26);not null"`
+	ParentID        *string
+	Content         string `gorm:"type:mediumtext;not null"`
+	CreatedAt       time.Time
+	UpdatedAt       time.Time
+
+	// Relationships
+	User          *User          `gorm:"foreignKey:UserID;references:ID;constraint:OnDelete:CASCADE;"`
+	DeveloperGame *DeveloperGame `gorm:"foreignKey:DeveloperGameID;references:ID;constraint:OnDelete:CASCADE;"`
+	Parent        *GameComment   `gorm:"foreignKey:ParentID;references:ID;constraint:OnDelete:CASCADE;"`
+	Replies       []*GameComment `gorm:"foreignKey:ParentID"`
 }
 
 // DeveloperMember represents memberships between a user and a developer account.
@@ -264,4 +283,7 @@ type FeatureTag struct {
 type ReportTag struct {
 	ID          string `gorm:"primaryKey;type:varchar(50);unique;not null;"`
 	Description string `gorm:"type:tinytext"`
+	IsUser      bool
+	IsDeveloper bool
+	IsGame      bool
 }

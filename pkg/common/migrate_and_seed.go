@@ -37,6 +37,7 @@ func MigrateAndSeed(db *gorm.DB) error {
 		&types.DeveloperMember{},
 		&types.DeveloperGameReport{},
 		&types.DeveloperReport{},
+		&types.GameComment{},
 		&types.Achievement{},
 		&types.UserGameSave{},
 		&types.Image{},
@@ -72,6 +73,20 @@ func MigrateAndSeed(db *gorm.DB) error {
 			if err := db.FirstOrCreate(&event).Error; err != nil {
 				return err
 			}
+		}
+	}
+
+	// Seed all report tags
+	for key, value := range types.ReportTags {
+		tag := &types.ReportTag{
+			ID:          key,
+			Description: value[0].(string),
+			IsUser:      value[1].(bool),
+			IsDeveloper: value[2].(bool),
+			IsGame:      value[3].(bool),
+		}
+		if err := db.FirstOrCreate(&tag).Error; err != nil {
+			return err
 		}
 	}
 

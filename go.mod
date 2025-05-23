@@ -2,7 +2,7 @@ module github.com/cloudlink-omega/storage
 
 go 1.24.1
 
-replace github.com/cloudlink-omega/accounts => ..\accounts
+replace github.com/cloudlink-omega/accounts => ../accounts
 
 require (
 	github.com/cloudlink-omega/accounts v0.0.0-00010101000000-000000000000

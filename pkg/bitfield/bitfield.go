@@ -8,6 +8,27 @@ import (
 type Bitfield8 uint8
 type Bitfield16 uint16
 
+// Writes a true value to the bits at the specified positions.
+func (b *Bitfield8) ManySet(pos ...uint) {
+	for _, p := range pos {
+		b.Set(p)
+	}
+}
+
+// Writes a false value to the bits at the specified positions.
+func (b *Bitfield8) ManyClear(pos ...uint) {
+	for _, p := range pos {
+		b.Clear(p)
+	}
+}
+
+// Toggles the value on the bits at the specified positions.
+func (b *Bitfield8) ManyToggle(pos ...uint) {
+	for _, p := range pos {
+		b.Toggle(p)
+	}
+}
+
 // Writes a true value to the bit at the specified position.
 func (b *Bitfield8) Set(pos uint) {
 	*b |= 1 << pos
